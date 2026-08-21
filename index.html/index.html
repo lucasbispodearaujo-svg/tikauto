@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Publicador de Vídeos</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .painel {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        button {
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 8px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            margin-top: 20px;
+            background: #111;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #333;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="painel">
+
+        <h1>📹 Publicador de Vídeos</h1>
+
+        <label>🎬 Escolha o vídeo</label>
+        <input type="file" id="video" accept="video/*">
+
+        <label>✍️ Legenda</label>
+        <textarea id="legenda"
+            placeholder="Digite a legenda do vídeo..."></textarea>
+
+        <label>🏷️ Hashtags</label>
+        <input
+            type="text"
+            id="hashtags"
+            placeholder="#tiktok #viral #fyp">
+
+        <button onclick="prepararVideo()">
+            🚀 Preparar publicação
+        </button>
+
+        <div id="status"></div>
+
+    </div>
+
+    <script>
+
+        function prepararVideo() {
+
+            const video =
+                document.getElementById("video").files[0];
+
+            const legenda =
+                document.getElementById("legenda").value.trim();
+
+            const hashtags =
+                document.getElementById("hashtags").value.trim();
+
+            const status =
+                document.getElementById("status");
+
+            if (!video) {
+                status.textContent =
+                    "⚠️ Escolha um vídeo primeiro.";
+                status.style.color = "red";
+                return;
+            }
+
+            if (legenda === "") {
+                status.textContent =
+                    "⚠️ Digite uma legenda.";
+                status.style.color = "red";
+                return;
+            }
+
+            status.textContent =
+                "✅ Vídeo preparado com sucesso!";
+
+            status.style.color = "green";
+
+            console.log("Vídeo:", video.name);
+            console.log("Legenda:", legenda);
+            console.log("Hashtags:", hashtags);
+        }
+
+    </script>
+
+</body>
+</html>
