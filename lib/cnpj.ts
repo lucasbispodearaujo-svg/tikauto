@@ -20,5 +20,6 @@ export function companyFields(data: Record<string, unknown>) {
     phone: (s('ddd_telefone_1') || s('ddd_telefone_2')).slice(0, 40),
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s('email')) ? s('email') : '',
     address: [[s('descricao_tipo_de_logradouro'), s('logradouro')].filter(Boolean).join(' '), s('numero'), s('complemento'), s('bairro'), [s('municipio'), s('uf')].filter(Boolean).join(' / '), s('cep')].filter(Boolean).join(', ').slice(0, 500),
+    profile: { tradeName: s('nome_fantasia').slice(0,150), birthDate: /^\d{4}-\d{2}-\d{2}$/.test(s('data_inicio_atividade')) ? s('data_inicio_atividade') : '', cep: s('cep').slice(0,12), street: [s('descricao_tipo_de_logradouro'),s('logradouro')].filter(Boolean).join(' ').slice(0,200), number: s('numero').slice(0,30), complement: s('complemento').slice(0,100), neighborhood: s('bairro').slice(0,100), city: s('municipio').slice(0,100), uf: s('uf').slice(0,2), country: s('uf') === 'EX' ? '' : 'Brasil' },
   };
 }
