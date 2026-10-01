@@ -2,6 +2,7 @@ import { env } from 'cloudflare:workers';
 import { getAdmin } from '@/lib/admin-auth';
 import { schedule,today } from '@/lib/finance';
 import { z } from 'zod';
+import { clientProfileSchema } from '@/lib/client-profile';
 export const dynamic='force-dynamic';
 function db(){if(!env.DB)throw new Error('Banco indisponível');return env.DB;}
 async function dataIdentity(request:Request){
@@ -15,7 +16,7 @@ async function dataIdentity(request:Request){
 }
 const date=z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v=>{const d=new Date(v+'T12:00:00Z');return !isNaN(d.getTime())&&d.toISOString().slice(0,10)===v},'Data inválida');
 const cents=z.number().int().min(0).max(100000000000);
-const client=z.object({id:z.string().optional(),name:z.string().trim().min(2).max(150),document:z.string().trim().min(3).max(30),phone:z.string().trim().max(40),email:z.union([z.literal(''),z.string().email()]),address:z.string().trim().max(500)});
+const client=z.object({id:z.string().optional(),name:z.string().trim().min(2).max(150),document:z.string().trim().min(3).max(30),phone:z.string().trim().max(40),email:z.union([z.literal(''),z.string().email()]),address:z.string().trim().max(500),details:clientProfileSchema.optional()});
 const plot=z.object({id:z.string().optional(),block:z.string().trim().min(1).max(60),number:z.string().trim().min(1).max(60),area:z.string().trim().min(1).max(30).refine(v=>Number(v.replace(',','.'))>0,'Área inválida'),price:cents.refine(v=>v>0),status:z.enum(['Disponível','Reservado'])});
 class UserError extends Error{}
 async function state(owner:string){const b=db();const result=await b.batch([b.prepare('SELECT * FROM clients WHERE owner=? ORDER BY name').bind(owner),b.prepare('SELECT * FROM plots WHERE owner=? ORDER BY block,number').bind(owner),b.prepare('SELECT * FROM contracts WHERE owner=? ORDER BY created DESC').bind(owner),b.prepare('SELECT * FROM installments WHERE owner=? ORDER BY due,number').bind(owner),b.prepare('SELECT * FROM settings WHERE owner=?').bind(owner)]);return {clients:result[0].results,plots:result[1].results,contracts:result[2].results,installments:result[3].results,settings:result[4].results[0]??{company:'LX Gestão Imobiliária',document:'',phone:''}};}
@@ -25,8 +26,8 @@ export async function POST(request:Request){try{
  const origin=request.headers.get('origin');if(!origin||origin!==new URL(request.url).origin)return Response.json({error:'Origem não autorizada.'},{status:403});
  const owner=user.userId;const b=db();const body=z.object({action:z.string(),data:z.unknown()}).parse(await request.json());
  if(body.action==='client'){
-  const p=client.parse(body.data);if(p.id){const r=await b.prepare('UPDATE clients SET name=?,document=?,phone=?,email=?,address=? WHERE id=? AND owner=?').bind(p.name,p.document,p.phone,p.email,p.address,p.id,owner).run();if(!r.meta.changes)throw new UserError('Cliente não encontrado.');}
-  else await b.prepare('INSERT INTO clients(id,owner,name,document,phone,email,address) VALUES(?,?,?,?,?,?,?)').bind(crypto.randomUUID(),owner,p.name,p.document,p.phone,p.email,p.address).run();
+  const p=client.parse(body.data);if(p.id){const r=await b.prepare('UPDATE clients SET name=?,document=?,phone=?,email=?,address=?,details=COALESCE(?,details) WHERE id=? AND owner=?').bind(p.name,p.document,p.phone,p.email,p.address,p.details?JSON.stringify(p.details):null,p.id,owner).run();if(!r.meta.changes)throw new UserError('Cliente não encontrado.');}
+  else await b.prepare('INSERT INTO clients(id,owner,name,document,phone,email,address,details) VALUES(?,?,?,?,?,?,?,?)').bind(crypto.randomUUID(),owner,p.name,p.document,p.phone,p.email,p.address,JSON.stringify(p.details??{})).run();
  }else if(body.action==='plot'){
   const p=plot.parse(body.data);if(p.id){const result=await b.prepare("UPDATE plots SET block=?,number=?,area=?,price=?,status=? WHERE id=? AND owner=? AND NOT EXISTS(SELECT 1 FROM contracts WHERE plot_id=plots.id)").bind(p.block,p.number,p.area,p.price,p.status,p.id,owner).run();if(!result.meta.changes)throw new UserError('Lote não encontrado ou já vendido.');}
   else await b.prepare('INSERT INTO plots(id,owner,block,number,area,price,status) VALUES(?,?,?,?,?,?,?)').bind(crypto.randomUUID(),owner,p.block,p.number,p.area,p.price,p.status).run();
