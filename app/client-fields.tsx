@@ -39,11 +39,12 @@ export default function ClientFields({ initial }: { initial?: Fields }) {
     return () => { active = false; clearTimeout(timer); controller.abort(); };
   }, [document, kind, attempt, initial?.document]);
   const changeDocument = (value: string) => {
+    const previousAuto = auto.current;
+    if (normalizeCnpj(value) !== document) auto.current = {};
     setValues(current => {
       const next = { ...current, document: value.toUpperCase() };
       if (normalizeCnpj(value) !== normalizeCnpj(current.document)) {
-        for (const key of ['name', 'phone', 'email', 'address'] as const) if (auto.current[key] === current[key]) next[key] = '';
-        auto.current = {};
+        for (const key of ['name', 'phone', 'email', 'address'] as const) if (previousAuto[key] === current[key]) next[key] = '';
       }
       return next;
     });
