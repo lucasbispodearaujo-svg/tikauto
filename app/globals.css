@@ -158,3 +158,4 @@ body{font-family:Arial,Helvetica,sans-serif;background:var(--background);color:v
 @media(max-width:640px){.client-general{grid-template-columns:1fr}.client-record-heading{align-items:flex-start;flex-direction:column}.client-history{grid-template-columns:1fr}.client-tabs{margin-top:16px}.client-tab-panel{padding-top:16px}}
 
 .create-account{width:100%;margin-top:12px;background:transparent;border:1px solid #285475;color:#edf5ff;padding:14px;border-radius:10px}.portal-installment{padding:16px 0;border-bottom:1px solid #285475}
+.currency-control{position:relative;display:flex;align-items:center}.currency-control>span{position:absolute;left:14px;color:#a8b9ce;pointer-events:none}.currency-control>input{padding-left:44px;width:100%}
