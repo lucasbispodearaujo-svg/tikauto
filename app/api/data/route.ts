@@ -28,6 +28,13 @@ export async function POST(request:Request){try{
  if(body.action==='client'){
   const p=client.parse(body.data);if(p.id){const r=await b.prepare('UPDATE clients SET name=?,document=?,phone=?,email=?,address=?,details=COALESCE(?,details) WHERE id=? AND owner=?').bind(p.name,p.document,p.phone,p.email,p.address,p.details?JSON.stringify(p.details):null,p.id,owner).run();if(!r.meta.changes)throw new UserError('Cliente não encontrado.');}
   else await b.prepare('INSERT INTO clients(id,owner,name,document,phone,email,address,details) VALUES(?,?,?,?,?,?,?,?)').bind(crypto.randomUUID(),owner,p.name,p.document,p.phone,p.email,p.address,JSON.stringify(p.details??{})).run();
+ }else if(body.action==='deleteClient'){
+  const p=z.object({id:z.string().min(1)}).parse(body.data);
+  const result=await b.prepare('DELETE FROM clients WHERE id=? AND owner=? AND NOT EXISTS(SELECT 1 FROM contracts WHERE client_id=clients.id)').bind(p.id,owner).run();
+  if(!result.meta.changes){
+   const existing=await b.prepare('SELECT id FROM clients WHERE id=? AND owner=?').bind(p.id,owner).first();
+   throw new UserError(existing?'Este cliente possui vendas ou contratos e não pode ser excluído.':'Cliente não encontrado.');
+  }
  }else if(body.action==='plot'){
   const p=plot.parse(body.data);if(p.id){const result=await b.prepare("UPDATE plots SET block=?,number=?,area=?,price=?,status=? WHERE id=? AND owner=? AND NOT EXISTS(SELECT 1 FROM contracts WHERE plot_id=plots.id)").bind(p.block,p.number,p.area,p.price,p.status,p.id,owner).run();if(!result.meta.changes)throw new UserError('Lote não encontrado ou já vendido.');}
   else await b.prepare('INSERT INTO plots(id,owner,block,number,area,price,status) VALUES(?,?,?,?,?,?,?)').bind(crypto.randomUUID(),owner,p.block,p.number,p.area,p.price,p.status).run();
