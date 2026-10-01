@@ -52,7 +52,7 @@ export default function EmailAccess() {
   }
   if (checking) return <main className="login"><div className="login-card" role="status">Verificando seu acesso…</div></main>;
   if (ready) return role==='admin' ? <Workspace name="Lucas" emailAuth /> : <ClientPortal />;
-  return <main className="login"><div className="login-card"><div className="brand-mark">LX</div><h1>LX Gestão Imobiliária</h1><p>Entre com seu e-mail para administrar clientes, lotes e recebimentos.</p>
+  return <main className="login"><div className="login-card"><div className="brand-mark">LX</div><h1>LX Gestão Imobiliária</h1><p>{creating?'Crie sua conta para acessar a área do cliente.':'Entre com seu e-mail para acessar sua conta.'}</p>
     <form onSubmit={signIn} className="email-login-form">
       <div className="field"><label htmlFor="login-email">E-mail</label><input id="login-email" type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} required disabled={busy}/></div>
       <div className="field"><label htmlFor="login-password">Senha</label><input id="login-password" type="password" minLength={creating?8:undefined} autoComplete={creating?'new-password':'current-password'} value={password} onChange={e => setPassword(e.target.value)} required disabled={busy}/></div>
