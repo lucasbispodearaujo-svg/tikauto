@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     if (!await getAdmin(request)) return reply({ error: 'Entre como administrador para consultar.' }, 401);
     const document = normalizeCnpj(new URL(request.url).searchParams.get('document') ?? '');
     if (!validCnpj(document)) return reply({ error: 'Confira o CNPJ informado.' }, 400);
-    const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${document}`, { signal: AbortSignal.timeout(10000), headers: { Accept: 'application/json' } });
+    const response = await fetch(`https://minhareceita.org/${document}`, { signal: AbortSignal.timeout(10000), headers: { Accept: 'application/json' } });
     if (response.status === 404) return reply({ error: 'Empresa não encontrada. Você pode preencher os dados manualmente.' }, 404);
     if (!response.ok) return reply({ error: 'Consulta indisponível. Tente novamente ou preencha manualmente.' }, 503);
     const data: unknown = await response.json();
